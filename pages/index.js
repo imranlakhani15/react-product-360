@@ -1,6 +1,81 @@
-import Head from 'next/head'
+import Head from "next/head";
+// import Tridi from 'react-tridi';
+
+import "react-tridi/dist/index.css";
+import { useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import styled from "styled-components";
+
+const Tridi = dynamic(() => import("react-tridi"), {
+  ssr: false,
+});
+
+const Card = styled.div`
+  width: 500px;
+  height: 500px;
+  padding: 40px;
+  background: white;
+  border-radius: 20px;
+  position: absolute;
+  left: ${props => props.x}px;
+  top: ${props => props.y}px;
+`;
 
 export default function Home() {
+  const [isAutoPlayRunning, setIsAutoPlayRunning] = useState(false);
+  const [pins, setPins] = useState([
+    {
+      id: "kwukoogcx71fkgpb3hb",
+      frameId: 0,
+      x: "0.504902",
+      y: "0.686275",
+      recordingSessionId: "kwukomkx8n24ksg87if",
+    },
+    {
+      id: "kwukoqdaujej8i2h59s",
+      frameId: 0,
+      x: "0.733456",
+      y: "0.622004",
+      recordingSessionId: "kwukomkx8n24ksg87if",
+    },
+    {
+      id: "kwukorpatf0acyua57l",
+      frameId: 0,
+      x: "0.501225",
+      y: "0.388889",
+      recordingSessionId: "kwukomkx8n24ksg87if",
+    },
+    {
+      id: "kwukotdsaj28xsfw9d",
+      frameId: 0,
+      x: "0.278799",
+      y: "0.496732",
+      recordingSessionId: "kwukomkx8n24ksg87if",
+    },
+  ]);
+  const [currentPin, setcurrentPin] = useState(undefined);
+  const tridiRef = useRef(null);
+
+  const frameChangeHandler = (currentFrameIndex) => {
+    console.log("current frame index", currentFrameIndex);
+  };
+
+  const recordStartHandler = (recordingSessionId) =>
+    console.log("on record start", { recordingSessionId, pins });
+
+  const recordStopHandler = (recordingSessionId) =>
+    console.log("on record stop", { recordingSessionId, pins });
+
+  const pinClickHandler = (pin) => {
+    console.log("on pin click", pin);
+    setcurrentPin(pin);
+  };
+
+  const onLoadChange = (loaded, percentage) => {
+    console.log("have all Image loaded? : " + loaded);
+    console.log("current load percentage : " + percentage + "%");
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Head>
@@ -8,75 +83,48 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
+      <main className="flex flex-col items-center justify-start w-full flex-1 px-20 text-center">
+        <div className="mt-12 relative">
+          <Tridi
+            ref={tridiRef}
+            location="/images"
+            format="jpeg"
+            count="36"
+            onFrameChange={frameChangeHandler}
+            autoplaySpeed={70}
+            onAutoplayStart={() => setIsAutoPlayRunning(true)}
+            onAutoplayStop={() => setIsAutoPlayRunning(false)}
+            onRecordStart={recordStartHandler}
+            onRecordStop={recordStopHandler}
+            onPinClick={pinClickHandler}
+            inverse
+            showControlBar
+            showStatusBar
+            pins={pins}
+            setPins={setPins}
+            hintOnStartup
+            hintText="Drag to view"
+            onLoadChange={onLoadChange}
+            minZoom={0.5}
+            zoom={1}
+          />
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
-
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
+          <button onClick={() => tridiRef.current.prev()}>Prev</button>
+          <button onClick={() => tridiRef.current.next()}>Next</button>
+          <button
+            onClick={() => tridiRef.current.toggleAutoplay(!isAutoPlayRunning)}
           >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+            {isAutoPlayRunning ? "Pause" : "Autoplay"}
+          </button>
         </div>
+        {currentPin ? (
+          <Card x={currentPin.x} y={currentPin.y}>
+            <p>
+              Current Co-ordinates: X - {currentPin.x}, Y - {currentPin.y}
+            </p>
+          </Card>
+        ) : null}
       </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
     </div>
-  )
+  );
 }
